@@ -1,5 +1,4 @@
 package com.codewithsaurabh.email_otp_verification.controller;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,20 +15,24 @@ import com.codewithsaurabh.email_otp_verification.service.UserService;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    
+    @Autowired
+    private final UserService userService;
+   
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    } 
 
-	@Autowired
-	UserService userService;
-
-	@PostMapping("/user-register")
-	public ResponseEntity<ResponseDto> registerUser(@RequestBody RequestDto request) {
-		ResponseDto res = this.userService.registerUser(request);
+   @PostMapping("/user-register")
+	public ResponseEntity<ResponseDto> registerUser(@RequestBody RequestDto request) throws Exception {
+		ResponseDto res = userService.registerUser(request);
 		return new ResponseEntity<>(res, HttpStatus.CREATED);
 	}
 
-	@PostMapping("/user-verify")
-	public ResponseEntity<?> verifyUser(@RequestParam String email, @RequestParam String otp) {
-		String res = this.userService.verifyUser(email, otp);
-		return new ResponseEntity<>(res, HttpStatus.OK);
-	}
+    @PostMapping("/user-verify")
+    public ResponseEntity<?> verifyUser(@RequestParam String email, @RequestParam String otp){
+            String res = userService.verifyUser(email, otp);
+            return new ResponseEntity<>(res, HttpStatus.OK);
+    }
 
 }

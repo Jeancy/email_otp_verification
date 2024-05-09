@@ -14,38 +14,45 @@ import com.codewithsaurabh.email_otp_verification.repository.UserRepo;
 public class UserService {
 
 	@Autowired
-	UserRepo userRepo;
+	private final UserRepo userRepo;
 	
 	@Autowired
-	EmailService emailService;
-	
-	
-	public ResponseDto registerUser(RequestDto request){
-		ResponseDto res = new ResponseDto();
+	 private final EmailService emailService;
+        
+        @Autowired
+        private final ResponseDto res;
+        
+        public UserService (UserRepo userRepo, EmailService emailService,
+                            ResponseDto res){
+            this.userRepo = userRepo;
+            this.emailService = emailService;
+            this.res = res;
+        }   
+       	
+	public ResponseDto registerUser(RequestDto request) throws Exception{
 		
 		User existingUser = this.userRepo.findByEmail(request.getEmail());
 		if(existingUser != null) {
 			res.setMessage("User already registered.");
 		} else {
-			Random r = new Random();
-			String otp = String.format("%06d", r.nextInt(100000));
-			
-			User newUser = new User();
-			newUser.setUsername(request.getUsername());
-			newUser.setEmail(request.getEmail());
-			newUser.setOtp(otp);
-			newUser.setVerified(false);
-			
-		 User savedUser = this.userRepo.save(newUser);
-		 String subject = "Email Verfication";
-		 String body = "Your verification OTP is "+savedUser.getOtp();
-		 //Email Send
-		 this.emailService.sendEmail(savedUser.getEmail(), subject, body);
-		 
-		 res.setUser_id(savedUser.getUser_id());
-		 res.setUsername(savedUser.getUsername());
-		 res.setEmail(savedUser.getEmail());
-		 res.setMessage("OTP sent successfully!");
+                    Random r = new Random();
+                    String otp = String.format("%06d", r.nextInt(100000));
+                    User newUser = new User();
+                    newUser.setUsername(request.getUsername());
+                    newUser.setEmail(request.getEmail());
+                    newUser.setOtp(otp);
+                    newUser.setVerified(false);
+		    // Saving new user	
+                    User savedUser = userRepo.save(newUser);
+                    String subject = "Activate your Account";
+                    String body = "Your verification OTP is "+savedUser.getOtp();
+                    //Email Send
+                    emailService.sendEmail(savedUser.getEmail(), subject, body);
+
+                    res.setUser_id(savedUser.getUser_id());
+                    res.setUsername(savedUser.getUsername());
+                    res.setEmail(savedUser.getEmail());
+                    res.setMessage("OTP sent successfully!");
 		 
 		}
 		
